@@ -17,19 +17,53 @@ class WishlistScreen extends StatelessWidget {
             .where((p) => wishlist.isWishlisted(p.id))
             .toList();
 
+        // ── Loading State ────────────────────────────────────────────────
         if (wishlist.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF1B8040)),
+          );
         }
 
+        // ── Empty State ──────────────────────────────────────────────────
         if (wishlistedProducts.isEmpty) {
-          return const Center(child: Text('Wishlist Anda kosong'));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.favorite_border_rounded,
+                  size: 64,
+                  color: Colors.grey.shade300,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Wishlist masih kosong',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Simpan produk favoritmu di sini',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                ),
+              ],
+            ),
+          );
         }
 
+        // ── Wishlist Grid ────────────────────────────────────────────────
         return GridView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.7,
+            childAspectRatio:
+                0.7, // Rasio ini dijaga agar gambar produk tetap proporsional
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),

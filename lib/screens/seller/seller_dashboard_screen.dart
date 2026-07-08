@@ -40,45 +40,68 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
   }
 
   Widget _buildDashboardTab() {
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-    
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+
     return Consumer2<ProductProvider, OrderProvider>(
       builder: (context, productProvider, orderProvider, child) {
         final totalProducts = productProvider.products.length;
         final orders = orderProvider.sellerOrders;
         final pendingOrders = orders.where((o) => o.status == 'pending').length;
-        
+
         // Calculate total income from completed orders
         final completedOrders = orders.where((o) => o.status == 'selesai');
         double totalIncome = 0;
         for (var order in completedOrders) {
-          totalIncome += order.items.fold(0.0, (sum, item) => sum + item.subtotal);
+          totalIncome += order.items.fold(
+            0.0,
+            (sum, item) => sum + item.subtotal,
+          );
         }
 
         return RefreshIndicator(
           onRefresh: () async {
             final user = context.read<AuthProvider>().user;
             if (user != null) {
-              await context.read<ProductProvider>().fetchSellerProducts(user.uid);
+              await context.read<ProductProvider>().fetchSellerProducts(
+                user.uid,
+              );
+              if (!context.mounted) return;
               await context.read<OrderProvider>().fetchSellerOrders(user.uid);
             }
           },
+          color: const Color(0xFF1B8040),
+          backgroundColor: Colors.white,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ringkasan Lapak', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                
+                Text(
+                  'Ringkasan Lapak',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Pantau performa penjualanmu hari ini',
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+
                 Row(
                   children: [
                     Expanded(
                       child: _SummaryCard(
                         title: 'Total Produk',
                         value: '$totalProducts',
-                        icon: Icons.inventory,
+                        icon: Icons.inventory_2_rounded,
                         color: Colors.blue,
                       ),
                     ),
@@ -87,34 +110,92 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                       child: _SummaryCard(
                         title: 'Pesanan Baru',
                         value: '$pendingOrders',
-                        icon: Icons.receipt_long,
+                        icon: Icons.receipt_long_rounded,
                         color: Colors.orange,
                       ),
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 16),
-                
+
+                const SizedBox(height: 24),
+
+                // Kartu Total Pendapatan Modern
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.shade200),
+                    color: const Color(
+                      0xFF1B8040,
+                    ).withValues(alpha: 0.05), // Soft green background
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: const Color(0xFF1B8040).withValues(alpha: 0.2),
+                      width: 1.5,
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      const Text('Total Pendapatan', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      Text(
-                        currencyFormat.format(totalIncome),
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1B8040).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: Color(0xFF1B8040),
+                          size: 32,
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text('*Dari pesanan selesai', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Total Pendapatan',
+                              style: TextStyle(
+                                color: Color(0xFF1B8040),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                currencyFormat.format(totalIncome),
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E293B),
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.check_circle_rounded,
+                                  size: 12,
+                                  color: Colors.green.shade600,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Dari pesanan selesai',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -138,13 +219,24 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Lapak Tani (Petani)'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        centerTitle: true,
+        title: const Text(
+          'Lapak Petani',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         actions: [
           if (user != null) ...[
             // Notification Bell
             StreamBuilder<List<NotificationModel>>(
-              stream: NotificationService().getUserNotifications(user.uid, user.role),
+              stream: NotificationService().getUserNotifications(
+                user.uid,
+                user.role,
+              ),
               builder: (context, snapshot) {
                 int unreadNotif = 0;
                 if (snapshot.hasData) {
@@ -154,68 +246,41 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                   alignment: Alignment.center,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.notifications),
+                      icon: const Icon(Icons.notifications_none_rounded),
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const NotificationScreen(),
+                          ),
+                        );
                       },
                     ),
                     if (unreadNotif > 0)
                       Positioned(
                         right: 8,
-                        top: 8,
+                        top: 10,
                         child: Container(
-                          padding: const EdgeInsets.all(2),
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.red.shade600,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
                           ),
-                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                          child: Text(
-                            '$unreadNotif',
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
                           ),
-                        ),
-                      ),
-                  ],
-                );
-              }
-            ),
-            
-            // Chat Icon
-            StreamBuilder<List<ChatRoomModel>>(
-              stream: ChatService().getUserChatRooms(user.uid, user.role),
-              builder: (context, snapshot) {
-                int totalUnread = 0;
-                if (snapshot.hasData) {
-                  for (var room in snapshot.data!) {
-                    totalUnread += room.unreadCountSeller; // since this is seller screen
-                  }
-                }
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.chat),
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatListScreen()));
-                      },
-                    ),
-                    if (totalUnread > 0)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                          child: Text(
-                            '$totalUnread',
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                          child: Center(
+                            child: Text(
+                              '$unreadNotif',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
@@ -223,27 +288,133 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                 );
               },
             ),
-          ]
+
+            // Chat Icon
+            StreamBuilder<List<ChatRoomModel>>(
+              stream: ChatService().getUserChatRooms(user.uid, user.role),
+              builder: (context, snapshot) {
+                int totalUnread = 0;
+                if (snapshot.hasData) {
+                  for (var room in snapshot.data!) {
+                    totalUnread +=
+                        room.unreadCountSeller; // since this is seller screen
+                  }
+                }
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chat_bubble_outline_rounded),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ChatListScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    if (totalUnread > 0)
+                      Positioned(
+                        right: 8,
+                        top: 10,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade600,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$totalUnread',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
         ],
       ),
       body: pages[_selectedIndex],
-      floatingActionButton: _selectedIndex == 2 ? FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const AddProductScreen()));
-        },
-        child: const Icon(Icons.add),
-      ) : null,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Produk Saya'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Pesanan'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
-        ],
+      floatingActionButton: _selectedIndex == 2
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddProductScreen()),
+                );
+              },
+              icon: const Icon(Icons.add_rounded),
+              label: const Text(
+                'Tambah Produk',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            )
+          : null,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          selectedItemColor: const Color(0xFF1B8040),
+          unselectedItemColor: Colors.grey.shade400,
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.normal,
+            fontSize: 11,
+          ),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_rounded),
+              label: 'Dasbor',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.inventory_2_rounded),
+              label: 'Produk',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_rounded),
+              label: 'Pesanan',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Profil',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -268,16 +439,59 @@ class _SummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 12),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          // Background Watermark Icon
+          Positioned(
+            right: -10,
+            bottom: -10,
+            child: Icon(icon, size: 70, color: color.withValues(alpha: 0.05)),
+          ),
+          // Content
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(height: 16),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

@@ -22,14 +22,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuth() async {
     await Future.delayed(const Duration(seconds: 2));
-    
+
     if (!mounted) return;
-    
+
     final authProvider = context.read<AuthProvider>();
     await authProvider.checkAuth();
-    
+
     if (!mounted) return;
-    
+
     if (authProvider.isLoggedIn) {
       Widget nextScreen;
       switch (authProvider.userRole) {
@@ -45,30 +45,43 @@ class _SplashScreenState extends State<SplashScreen> {
         default:
           nextScreen = const LoginScreen();
       }
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => nextScreen),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => nextScreen));
     } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.eco, size: 80, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
+            // ── Logo Modern ──────────────────────────────────────────────
+            Icon(Icons.eco_rounded, size: 100, color: Color(0xFF1B8040)),
+            SizedBox(height: 24),
             Text(
               'Lapak Tani',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+              style: TextStyle(
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
+                color: Color(0xFF1B8040),
+                letterSpacing: -0.5,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Solusi Pertanian Masa Kini',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+                letterSpacing: 0.5,
               ),
             ),
           ],

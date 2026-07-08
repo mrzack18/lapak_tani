@@ -16,24 +16,21 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
+    // Menggunakan warna utama 0xFF1B8040 yang konsisten dengan tema aplikasi
+    const Color primaryColor = Color(0xFF1B8040);
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? primaryColor
-              : primaryColor.withValues(alpha: 0.08),
+          color: isSelected ? primaryColor : primaryColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? primaryColor
-                : primaryColor.withValues(alpha: 0.3),
-            width: 1,
+            color: isSelected ? primaryColor : primaryColor.withValues(alpha: 0.2),
+            width: 1.5,
           ),
         ),
         child: Row(
@@ -41,16 +38,16 @@ class CategoryChip extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 18,
+              size: 16,
               color: isSelected ? Colors.white : primaryColor,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
             Text(
               name,
-              style: theme.textTheme.bodySmall?.copyWith(
+              style: TextStyle(
                 color: isSelected ? Colors.white : primaryColor,
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                fontSize: 13,
               ),
             ),
           ],

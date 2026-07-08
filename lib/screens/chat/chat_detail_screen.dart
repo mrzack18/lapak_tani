@@ -162,7 +162,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           child: Image.network(
                             msg.productImageUrl!,
                             width: 40, height: 40, fit: BoxFit.cover,
-                            errorBuilder: (_,__,___) => const Icon(Icons.image, size: 40),
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 40),
                           ),
                         ),
                       const SizedBox(width: 8),
@@ -261,7 +261,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             child: Image.network(
                               _currentTagImage!,
                               width: 40, height: 40, fit: BoxFit.cover,
-                              errorBuilder: (_,__,___) => const Icon(Icons.image, size: 40),
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 40),
                             ),
                           ),
                         const SizedBox(width: 8),

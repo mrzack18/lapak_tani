@@ -18,7 +18,7 @@ class FirestoreSeeder {
       log += await seedReviews();
       return log;
     } catch (e) {
-      return log + '\nError: $e';
+      return '$log\nError: $e';
     }
   }
 
@@ -133,7 +133,7 @@ class FirestoreSeeder {
           .get();
 
       if (petaniQuery.docs.isEmpty) {
-        return log + '❌ No petani user found. Seed users first.\n';
+        return '$log❌ No petani user found. Seed users first.\n';
       }
 
       final petaniDoc = petaniQuery.docs.first;
@@ -352,7 +352,7 @@ class FirestoreSeeder {
           .get();
 
       if (pembeliQuery.docs.isEmpty || petaniQuery.docs.isEmpty) {
-        return log + '❌ Pembeli or petani user not found. Seed users first.\n';
+        return '$log❌ Pembeli or petani user not found. Seed users first.\n';
       }
 
       final pembeliUid = pembeliQuery.docs.first.id;
@@ -449,7 +449,7 @@ class FirestoreSeeder {
           .get();
 
       if (pembeliQuery.docs.isEmpty) {
-        return log + '❌ Pembeli user not found. Seed users first.\n';
+        return '$log❌ Pembeli user not found. Seed users first.\n';
       }
 
       final pembeliUid = pembeliQuery.docs.first.id;
