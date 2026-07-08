@@ -9,6 +9,8 @@ import 'package:lapak_tani/services/review_service.dart';
 import 'package:lapak_tani/models/review_model.dart';
 import 'package:lapak_tani/widgets/review_card.dart';
 import 'package:lapak_tani/widgets/loading_widget.dart';
+import 'package:lapak_tani/screens/buyer/store_screen.dart';
+import 'package:lapak_tani/screens/chat/chat_detail_screen.dart';
 import 'package:intl/intl.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -149,12 +151,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.store, size: 20, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(product.sellerName, style: const TextStyle(color: Colors.grey)),
-                            ],
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => StoreScreen(sellerId: product.sellerId),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(Icons.store, size: 20, color: Colors.green),
+                                const SizedBox(width: 4),
+                                Text(
+                                  product.sellerName, 
+                                  style: const TextStyle(
+                                    color: Colors.green, 
+                                    fontWeight: FontWeight.bold,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           Row(
                             children: [
@@ -236,7 +255,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
+                  // Chat Penjual Button
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).primaryColor),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.chat_bubble_outline, color: Theme.of(context).primaryColor),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => ChatDetailScreen(
+                            targetUserId: product.sellerId,
+                            targetUserName: product.sellerName,
+                            taggedProductId: product.id,
+                            taggedProductName: product.name,
+                            taggedProductImageUrl: product.imageUrl,
+                          ),
+                        ));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   // Add to cart button
                   Expanded(
                     child: ElevatedButton.icon(

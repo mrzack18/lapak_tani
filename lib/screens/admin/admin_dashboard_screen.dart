@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:lapak_tani/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lapak_tani/screens/admin/manage_users_screen.dart';
 import 'package:lapak_tani/screens/admin/manage_products_screen.dart';
 import 'package:lapak_tani/screens/admin/manage_orders_screen.dart';
+import 'package:lapak_tani/screens/buyer/buyer_home_tab.dart';
+import 'package:lapak_tani/screens/notification_screen.dart';
+import 'package:lapak_tani/services/notification_service.dart';
+import 'package:lapak_tani/models/notification_model.dart';
 import 'package:lapak_tani/screens/buyer/profile_screen.dart';
 import 'package:lapak_tani/seeder/firestore_seeder.dart';
 import 'package:lapak_tani/services/user_service.dart';
@@ -19,11 +24,11 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int _selectedIndex = 0;
-  
+
   final _userService = UserService();
   final _productService = ProductService();
   final _orderService = OrderService();
-  
+
   int _totalUsers = 0;
   int _totalProducts = 0;
   int _totalOrders = 0;
@@ -42,16 +47,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       final users = await _userService.getTotalUsersCount();
       final products = await _productService.getTotalProductsCount();
       final orders = await _orderService.getTotalOrdersCount();
-      
+
       final allOrdersList = await _orderService.getAllOrders();
       double revenue = 0.0;
       for (var o in allOrdersList) {
         if (o.status == 'selesai') {
-          double subtotal = o.items.fold(0.0, (sum, item) => sum + item.subtotal);
+          double subtotal = o.items.fold(
+            0.0,
+            (sum, item) => sum + item.subtotal,
+          );
           revenue += (subtotal * 0.10);
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _totalUsers = users;
@@ -109,12 +117,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildDashboardTab() {
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
 
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     return RefreshIndicator(
       onRefresh: _fetchStats,
       child: SingleChildScrollView(
@@ -123,27 +135,60 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Statistik Sistem', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Statistik Sistem',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
-                Expanded(child: _StatCard(title: 'Pengguna', value: '$_totalUsers', icon: Icons.group, color: Colors.blue)),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Pengguna',
+                    value: '$_totalUsers',
+                    icon: Icons.group,
+                    color: Colors.blue,
+                  ),
+                ),
                 const SizedBox(width: 16),
-                Expanded(child: _StatCard(title: 'Produk', value: '$_totalProducts', icon: Icons.inventory, color: Colors.green)),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Produk',
+                    value: '$_totalProducts',
+                    icon: Icons.inventory,
+                    color: Colors.green,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _StatCard(title: 'Total Pesanan', value: '$_totalOrders', icon: Icons.receipt, color: Colors.orange)),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Total Pesanan',
+                    value: '$_totalOrders',
+                    icon: Icons.receipt,
+                    color: Colors.orange,
+                  ),
+                ),
                 const SizedBox(width: 16),
-                Expanded(child: _StatCard(title: 'PPN Admin', value: currencyFormat.format(_totalRevenue), icon: Icons.account_balance_wallet, color: Colors.purple)),
+                Expanded(
+                  child: _StatCard(
+                    title: 'PPN Admin',
+                    value: currencyFormat.format(_totalRevenue),
+                    icon: Icons.account_balance_wallet,
+                    color: Colors.purple,
+                  ),
+                ),
               ],
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             Card(
               color: Colors.red.shade50,
               child: Padding(
@@ -155,18 +200,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         Icon(Icons.warning, color: Colors.red),
                         SizedBox(width: 8),
-                        Text('Development Tools', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                        Text(
+                          'Development Tools',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Text('Gunakan tombol di bawah ini untuk mengisi database dengan data dummy lengkap (User, Kategori, Produk, Pesanan, Review).'),
+                    const Text(
+                      'Gunakan tombol di bawah ini untuk mengisi database dengan data dummy lengkap (User, Kategori, Produk, Pesanan, Review).',
+                    ),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.data_object),
                         label: const Text('Jalankan Seeder'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
                         onPressed: _runSeeder,
                       ),
                     ),
@@ -182,7 +238,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
     final List<Widget> pages = [
+      const BuyerHomeTab(),
       _buildDashboardTab(),
       const ManageUsersScreen(),
       const ManageProductsScreen(),
@@ -193,6 +251,64 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lapak Tani (Admin)'),
+        actions: [
+          if (user != null) ...[
+            // Notification Bell
+            StreamBuilder<List<NotificationModel>>(
+              stream: NotificationService().getUserNotifications(
+                user.uid,
+                user.role,
+              ),
+              builder: (context, snapshot) {
+                int unreadNotif = 0;
+                if (snapshot.hasData) {
+                  unreadNotif = snapshot.data!.where((n) => !n.isRead).length;
+                }
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const NotificationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    if (unreadNotif > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            '$unreadNotif',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ],
       ),
       body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -200,9 +316,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Users'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Products'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory),
+            label: 'Products',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Orders'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
@@ -217,7 +340,12 @@ class _StatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _StatCard({required this.title, required this.value, required this.icon, required this.color});
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -226,14 +354,19 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: color, size: 32),
           const SizedBox(height: 12),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
           Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
         ],
       ),

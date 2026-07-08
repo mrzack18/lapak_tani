@@ -167,7 +167,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                               const Spacer(),
                               if (order.status == 'selesai')
                                 FutureBuilder<bool>(
-                                  future: _reviewService.hasUserReviewed(user!.uid, order.id),
+                                  future: _reviewService.hasUserReviewed(user!.uid, order.id, item.productId),
                                   builder: (context, snapshot) {
                                     if (snapshot.hasData && !snapshot.data!) {
                                       return TextButton(

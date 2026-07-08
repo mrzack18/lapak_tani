@@ -8,6 +8,8 @@ class OrderService {
   /// Returns the auto-generated order ID.
   Future<String> createOrder(OrderModel order) async {
     try {
+      final batch = _firestore.batch();
+
       final DocumentReference docRef =
           _firestore.collection('orders').doc();
 
@@ -17,7 +19,19 @@ class OrderService {
         updatedAt: DateTime.now(),
       );
 
-      await docRef.set(newOrder.toMap());
+      // 1. Tambahkan pesanan ke batch
+      batch.set(docRef, newOrder.toMap());
+
+      // 2. Kurangi stok setiap produk di pesanan ini
+      for (var item in order.items) {
+        final productRef = _firestore.collection('products').doc(item.productId);
+        batch.update(productRef, {
+          'stock': FieldValue.increment(-item.quantity),
+        });
+      }
+
+      // Jalankan batch
+      await batch.commit();
 
       return docRef.id;
     } catch (e) {

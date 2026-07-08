@@ -8,7 +8,13 @@ class ReviewService {
   Future<void> addReview(ReviewModel review) async {
     try {
       // 1. Add review to 'reviews' collection
-      await _firestore.collection('reviews').doc(review.id).set(review.toMap());
+      String docId = review.id;
+      if (docId.isEmpty) {
+        docId = _firestore.collection('reviews').doc().id;
+      }
+      final reviewData = review.toMap();
+      reviewData['id'] = docId;
+      await _firestore.collection('reviews').doc(docId).set(reviewData);
       
       // 2. Fetch all reviews for this product
       final snapshot = await _firestore
@@ -53,12 +59,13 @@ class ReviewService {
   }
   
   // Check if user already reviewed a product for an order
-  Future<bool> hasUserReviewed(String userId, String orderId) async {
+  Future<bool> hasUserReviewed(String userId, String orderId, String productId) async {
     try {
       final snapshot = await _firestore
           .collection('reviews')
           .where('userId', isEqualTo: userId)
           .where('orderId', isEqualTo: orderId)
+          .where('productId', isEqualTo: productId)
           .limit(1)
           .get();
           

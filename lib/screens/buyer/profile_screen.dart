@@ -53,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
                 radius: 50,
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 child: Text(
-                  user.name.substring(0, 1).toUpperCase(),
+                  user.name.isNotEmpty ? user.name.substring(0, 1).toUpperCase() : 'U',
                   style: const TextStyle(fontSize: 40, color: Colors.white),
                 ),
               ),

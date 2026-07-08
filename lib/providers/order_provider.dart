@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lapak_tani/models/order_model.dart';
 import 'package:lapak_tani/services/order_service.dart';
+import 'package:lapak_tani/services/notification_service.dart';
 
 class OrderProvider extends ChangeNotifier {
   final OrderService _orderService = OrderService();
+  final NotificationService _notificationService = NotificationService();
 
   List<OrderModel> _buyerOrders = [];
   List<OrderModel> _sellerOrders = [];
@@ -58,10 +60,27 @@ class OrderProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      await _orderService.createOrder(order);
+      final newOrderId = await _orderService.createOrder(order);
 
       // Add to local buyer orders list
-      _buyerOrders.insert(0, order);
+      final newOrder = order.copyWith(id: newOrderId);
+      _buyerOrders.insert(0, newOrder);
+
+      // Trigger notifications
+      await _notificationService.sendNotification(
+        userId: order.sellerId,
+        title: 'Pesanan Baru Masuk!',
+        message: 'Pembeli ${order.buyerName} membuat pesanan baru.',
+        type: 'order',
+        relatedId: newOrderId,
+      );
+      await _notificationService.sendNotification(
+        userId: 'admin',
+        title: 'Pesanan Baru Masuk!',
+        message: 'Pesanan baru dari ${order.buyerName} untuk lapak ${order.sellerName}.',
+        type: 'order',
+        relatedId: newOrderId,
+      );
 
       _isLoading = false;
       notifyListeners();
@@ -112,6 +131,19 @@ class OrderProvider extends ChangeNotifier {
         _sellerOrders[sellerIndex] =
             _sellerOrders[sellerIndex].copyWith(status: status);
       }
+
+      // Find order to notify buyer
+      final o = _allOrders.firstWhere((o) => o.id == orderId, 
+          orElse: () => _sellerOrders.firstWhere((o) => o.id == orderId, 
+          orElse: () => _buyerOrders.firstWhere((o) => o.id == orderId)));
+
+      await _notificationService.sendNotification(
+        userId: o.buyerId,
+        title: 'Status Pesanan Diperbarui',
+        message: 'Pesanan Anda dari ${o.sellerName} sekarang berstatus: ${status.toUpperCase()}.',
+        type: 'order',
+        relatedId: orderId,
+      );
 
       _isLoading = false;
       notifyListeners();

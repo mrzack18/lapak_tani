@@ -3,9 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:lapak_tani/providers/product_provider.dart';
 import 'package:lapak_tani/providers/order_provider.dart';
 import 'package:lapak_tani/providers/auth_provider.dart';
+import 'package:lapak_tani/screens/buyer/buyer_home_tab.dart';
 import 'package:lapak_tani/screens/seller/my_products_screen.dart';
 import 'package:lapak_tani/screens/seller/add_product_screen.dart';
 import 'package:lapak_tani/screens/seller/seller_orders_screen.dart';
+import 'package:lapak_tani/screens/chat/chat_list_screen.dart';
+import 'package:lapak_tani/screens/notification_screen.dart';
+import 'package:lapak_tani/services/chat_service.dart';
+import 'package:lapak_tani/services/notification_service.dart';
+import 'package:lapak_tani/models/chat_room_model.dart';
+import 'package:lapak_tani/models/notification_model.dart';
 import 'package:lapak_tani/screens/buyer/profile_screen.dart';
 import 'package:intl/intl.dart';
 
@@ -121,7 +128,9 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.read<AuthProvider>().user;
     final List<Widget> pages = [
+      const BuyerHomeTab(),
       _buildDashboardTab(),
       const MyProductsScreen(),
       const SellerOrdersScreen(),
@@ -131,9 +140,94 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lapak Tani (Petani)'),
+        actions: [
+          if (user != null) ...[
+            // Notification Bell
+            StreamBuilder<List<NotificationModel>>(
+              stream: NotificationService().getUserNotifications(user.uid, user.role),
+              builder: (context, snapshot) {
+                int unreadNotif = 0;
+                if (snapshot.hasData) {
+                  unreadNotif = snapshot.data!.where((n) => !n.isRead).length;
+                }
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+                      },
+                    ),
+                    if (unreadNotif > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          child: Text(
+                            '$unreadNotif',
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              }
+            ),
+            
+            // Chat Icon
+            StreamBuilder<List<ChatRoomModel>>(
+              stream: ChatService().getUserChatRooms(user.uid, user.role),
+              builder: (context, snapshot) {
+                int totalUnread = 0;
+                if (snapshot.hasData) {
+                  for (var room in snapshot.data!) {
+                    totalUnread += room.unreadCountSeller; // since this is seller screen
+                  }
+                }
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chat),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatListScreen()));
+                      },
+                    ),
+                    if (totalUnread > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          child: Text(
+                            '$totalUnread',
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ]
+        ],
       ),
       body: pages[_selectedIndex],
-      floatingActionButton: _selectedIndex == 1 ? FloatingActionButton(
+      floatingActionButton: _selectedIndex == 2 ? FloatingActionButton(
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const AddProductScreen()));
         },
@@ -144,6 +238,7 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
         items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Produk Saya'),
           BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Pesanan'),
