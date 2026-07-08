@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "478804619543",
+    "project_id": "tapak-tani",
+    "storage_bucket": "tapak-tani.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478804619543:android:0352de76c4ea91665e0752",
+        "android_client_info": {
+          "package_name": "com.example.lapak_tani"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeR2C97KzioPEFWggKIUcsS9VX9P2NCJA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
